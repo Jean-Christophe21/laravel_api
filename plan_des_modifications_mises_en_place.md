@@ -110,6 +110,34 @@ class UpdateTaskRequest extends FormRequest
 }
 ```
 
+On continue alors avec la validation dédiée pour la transition de statut (`UpdateTaskStatusRequest`)
+
+Afin d'isoler la logique de validation propre à l'endpoint `PATCH /api/v1/tasks/{id}/status`, nous créons une Form Request dédiée :
+
+```bash
+// Commande pour créer la Form Request de changement de statut
+php artisan make:request UpdateTaskStatusRequest
+
+```
+
+Le fichier `app/Http/Requests/UpdateTaskStatusRequest.php` contiendra :
+
+```php
+class UpdateTaskStatusRequest extends FormRequest
+{
+...
+    public function rules(): array
+    {
+        return [
+            'status' => 'required|in:todo,in_progress,done',
+        ];
+    }
+...
+}
+
+```
+
+
 ```php
 // Commande pour créer le contrôleur "TaskController"
 php artisan make:controller TaskController --api
@@ -163,6 +191,61 @@ class TaskResource extends JsonResource
 }
 ```
 
+### Étape 7 : On passera à l'étape de Gestion globale des ressources inexistantes (Erreurs 404 JSON)
+
+Pour respecter la contrainte d'une **réponse JSON cohérente** en cas de ressource non trouvée (`404 Not Found`), nous interceptons l'exception dans `bootstrap/app.php` :
+
+```php
+return Application::configure(basePath: dirname(__DIR__))
+    ->withRouting(
+    ...
+    )
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->renderable(function (NotFoundHttpException $e, $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'message' => 'La ressource demandée n\'existe pas.'
+                ], 404);
+            }
+        });
+    })->create();
+
+```
+
+Étape 8 : Avant les tests on passera à la partie Données de test (Factory et Seeder)
+
+Pour faciliter le développement et l'exécution des tests automatisés, nous mettons en place une Factory et un Seeder :
+
+```bash
+// Commandes de création de la factory et du seeder
+php artisan make:factory TaskFactory
+php artisan make:seeder TaskSeeder
+
+```
+
+Code de `database/factories/TaskFactory.php` :
+
+```php
+class TaskFactory extends Factory
+{
+    public function definition(): array
+    {
+        return [
+            'title' => $this->faker->sentence(4),
+            'description' => $this->faker->paragraph(),
+            'priority' => $this->faker->randomElement(['low', 'medium', 'high']),
+            'status' => $this->faker->randomElement(['todo', 'in_progress', 'done']),
+            'due_date' => $this->faker->optional()->date(),
+        ];
+    }
+}
+
+```
+### Étape 9 : Mise en place des Tests Feature automatisés
+
+Pour valider l'ensemble des 9 scénarios exigés par le cahier des charges, nous créerons la classe de test qui contiendra les tests.
+
+
 
 
 #### Fonctionnalités obligatoires
@@ -205,3 +288,21 @@ les contraintes sur le projet sont les suivantes:
 - README d’installation et contrat API.
 - Tests automatisés et/ou collection API complémentaire.
 - Note courte : choix techniques, difficultés et améliorations possibles. 
+
+
+Étape 10 : Préparation des Livrables
+
+Pour finaliser le projet et garantir la conformité de la livraison :
+
+1. **Repository Git :**
+* Présence d'un fichier `.gitignore` valide s'assurant qu'aucun secret (`.env`) ou dépendance (`/vendor`) n'est versionné.
+
+
+2. **Fichier `README.md` :**
+* Procédure complète d'installation (`composer install`, configuration `.env`, `php artisan migrate --seed`).
+* Commande d'exécution de la suite de tests (`php artisan test`).
+* Contrat d'API exhaustif détaillant les URLs, méthodes HTTP, paramètres requis et exemples de réponses JSON.
+
+
+3. **Collection d'API :**
+* Export JSON d'une collection Postman / Insomnia couvrant tous les scénarios de test.
