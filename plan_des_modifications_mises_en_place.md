@@ -146,14 +146,15 @@ php artisan make:controller TaskController --api
 
 5- Nous allons ensuite créer les routes pour l'API dans le fichier routes/api.php.
 Voici le tableau des routes pour l'API:
+
 | Méthode HTTP | Endpoint                     | Description                  |
 |--------------|------------------------------|------------------------------|
-| GET          | `/api/v1/tasks`             | Liste + filtres + pagination |
-| GET          | `/api/v1/tasks/{id}`        | Détail                       |
-| POST         | `/api/v1/tasks`             | Création                     |
-| PUT/PATCH    | `/api/v1/tasks/{id}`        | Modification                 |
-| PATCH        | `/api/v1/tasks/{id}/status` | Transition de statut         |
-| DELETE       | `/api/v1/tasks/{id}`        | Suppression                  |
+| GET          | `/api/v1/tasks`              | Liste + filtres + pagination |
+| GET          | `/api/v1/tasks/{id}`         | Détail                       |
+| POST         | `/api/v1/tasks`              | Création                     |
+| PUT/PATCH    | `/api/v1/tasks/{id}`         | Modification                 |
+| PATCH        | `/api/v1/tasks/{id}/status`  | Transition de statut         |
+| DELETE       | `/api/v1/tasks/{id}`         | Suppression                  |
 
 ```php
 // pour regrouper toutes les routes de l'api, nous allons utiliser la méthode apiResource qui permet de créer automatiquement les routes pour les méthodes index, store, show, update et destroy du contrôleur TaskController.
