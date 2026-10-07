@@ -31,4 +31,27 @@ class StoretaskRequest extends FormRequest
             'due_date' => ['nullable'],
         ];
     }
+
+    public function messages()
+    {
+        return [
+            'priority.required' => "la :attribute est requise",
+            'priority.in' => "la :attribute doit contenir 'todo', 'in_progress', 'done' ",
+            'title.max' => 'le champ :attribute est limité à 50 caractères',
+            'title.required' => 'le champ :attribute est requis',
+            'status.in' => 'le champ :attribute doit appartenir à "todo", "in_progress", "done"',
+            'status.required' => 'le champ :attribute est obligatoire'
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'title' => 'titre',
+            'priority' => 'priorité',
+            'description' => 'description',
+            'status' => 'statut',
+            'due_date' => 'date de fin'
+        ];
+    }
 }
