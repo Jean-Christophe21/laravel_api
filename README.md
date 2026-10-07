@@ -1,58 +1,294 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Tasks API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API REST Laravel pour créer et gérer des tâches.
 
-## About Laravel
+## Prérequis
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 8.3 ou supérieur ;
+- Composer ;
+- SQLite (utilisé par défaut) ;
+- Node.js et npm uniquement si les assets front-end doivent être compilés.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Installation
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Depuis la racine du projet :
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone <url-du-depot>
+cd test_laravel_api-innovertec
+composer install
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Créer le fichier d'environnement et générer la clé Laravel :
 
-## Contributing
+```bash
+copy .env.example .env    # Windows
+# cp .env.example .env    # macOS/Linux
+php artisan key:generate
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+La configuration fournie utilise SQLite :
 
-## Code of Conduct
+```dotenv
+DB_CONNECTION=mysql
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-## Security Vulnerabilities
+Initialiser le schéma :
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+php artisan migrate
+```
 
-## License
+Pour installer les données de démonstration (un utilisateur et des tâches) :
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+php artisan migrate:fresh --seed
+```
+
+## Démarrage
+
+Lancer le serveur de développement :
+
+```bash
+php artisan serve
+```
+
+L'API est alors disponible à l'adresse `http://127.0.0.1:8000`.
+
+Vérifier les routes exposées :
+
+```bash
+php artisan route:list --path=api
+```
+
+## Tests
+
+```bash
+php artisan test
+```
+
+## Contrat API
+
+### Convention générale
+
+- Base URL locale : `http://127.0.0.1:8000/api`
+- Version courante : `/v1`
+- Les requêtes JSON doivent envoyer `Accept: application/json`.
+- Pour `POST`, `PUT` et `PATCH`, envoyer également `Content-Type: application/json`.
+- Les endpoints de tâches sont publics dans la configuration actuelle.
+- `GET /api/user` nécessite une authentification Laravel Sanctum (`Authorization:
+  Bearer <token>`).
+
+### Ressource `Task`
+
+| Champ | Type | Obligatoire | Valeurs / contraintes |
+| --- | --- | --- | --- |
+| `id` | entier | réponse uniquement | Identifiant auto-incrémenté |
+| `title` | chaîne | oui à la création et mise à jour | 50 caractères maximum |
+| `description` | chaîne ou `null` | non | 250 caractères maximum |
+| `priority` | chaîne | oui à la création et mise à jour | `low`, `medium`, `high` |
+| `status` | chaîne | oui à la création et mise à jour | `todo`, `in_progress`, `done` |
+| `due_date` | date/chaîne ou `null` | non | Date d'échéance facultative |
+| `created_at` | date ISO 8601 | réponse uniquement | Date de création |
+| `updated_at` | date ISO 8601 | réponse uniquement | Date de dernière modification |
+
+Les erreurs de validation renvoient HTTP `422` avec le format d'erreur Laravel
+(`message` et `errors`).
+
+### Lister les tâches
+
+```http
+GET /api/v1/tasks
+```
+
+Filtres et paramètres optionnels :
+
+| Paramètre | Description |
+| --- | --- |
+| `status` | Filtre sur `todo`, `in_progress` ou `done` |
+| `priority` | Filtre sur `low`, `medium` ou `high` |
+| `per_page` | Nombre d'éléments par page, 10 par défaut |
+| `page` | Active la réponse paginée Laravel |
+
+Sans paramètre `page`, la réponse est HTTP `200` :
+
+```json
+{
+  "page": [
+    {
+      "id": 1,
+      "title": "Préparer la documentation",
+      "description": "Décrire l'installation et les endpoints",
+      "priority": "high",
+      "status": "todo",
+      "due_date": null,
+      "created_at": "2026-10-06T10:00:00.000000Z",
+      "updated_at": "2026-10-06T10:00:00.000000Z"
+    }
+  ]
+}
+```
+
+Avec `page`, la réponse est la structure de pagination Laravel et contient
+notamment `current_page`, `data`, `per_page`, `total`, `last_page` et les liens de
+navigation.
+
+Exemple :
+
+```bash
+curl "http://127.0.0.1:8000/api/v1/tasks?status=todo&priority=high&page=1&per_page=10" \
+  -H "Accept: application/json"
+```
+
+### Consulter une tâche
+
+```http
+GET /api/v1/tasks/{task}
+```
+
+Réponse HTTP `200` :
+
+```json
+{
+  "data": {
+    "id": 1,
+    "title": "Préparer la documentation",
+    "description": "Décrire l'installation et les endpoints",
+    "priority": "high",
+    "status": "todo",
+    "due_date": null,
+    "created_at": "2026-10-06T10:00:00.000000Z",
+    "updated_at": "2026-10-06T10:00:00.000000Z"
+  }
+}
+```
+
+Une tâche inexistante renvoie HTTP `404`.
+
+### Créer une tâche
+
+```http
+POST /api/v1/tasks
+```
+
+Corps minimal valide :
+
+```json
+{
+  "title": "Préparer la documentation",
+  "description": "Décrire l'installation et les endpoints",
+  "priority": "high",
+  "status": "todo",
+  "due_date": null
+}
+```
+
+Réponse HTTP `201` :
+
+```json
+{
+  "message": "create with success",
+  "data": {
+    "id": 1,
+    "title": "Préparer la documentation",
+    "description": "Décrire l'installation et les endpoints",
+    "priority": "high",
+    "status": "todo",
+    "due_date": null,
+    "created_at": "2026-10-06T10:00:00.000000Z",
+    "updated_at": "2026-10-06T10:00:00.000000Z"
+  }
+}
+```
+
+Exemple :
+
+```bash
+curl -X POST "http://127.0.0.1:8000/api/v1/tasks" \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d "{\"title\":\"Préparer la documentation\",\"priority\":\"high\",\"status\":\"todo\"}"
+```
+
+### Modifier une tâche
+
+```http
+PUT|PATCH /api/v1/tasks/{task}
+```
+
+La requête utilise les mêmes champs et contraintes que la création. Les champs
+`title`, `priority` et `status` restent obligatoires, même avec `PATCH`.
+
+Réponse HTTP `200` :
+
+```json
+{
+  "message": "Task update with success",
+  "data": { "...": "tâche mise à jour" }
+}
+```
+
+### Modifier uniquement le statut
+
+```http
+PATCH /api/v1/tasks/{task}/status
+```
+
+Corps :
+
+```json
+{
+  "status": "in_progress"
+}
+```
+
+Réponse HTTP `200` :
+
+```json
+{
+  "message": "Task status update witch success",
+  "data": {
+    "id": 1,
+    "status": "in_progress",
+    "updated at": "2026-10-06T10:15:00.000000Z"
+  }
+}
+```
+
+### Supprimer une tâche
+
+```http
+DELETE /api/v1/tasks/{task}
+```
+
+Réponse HTTP `200` :
+
+```json
+{
+  "message": "delete successfully"
+}
+```
+
+## Authentification Sanctum
+
+La route suivante est protégée :
+
+```http
+GET /api/user
+Authorization: Bearer <token>
+```
+
+Elle renvoie l'utilisateur authentifié. Les routes de création, lecture,
+modification et suppression des tâches ne demandent pas de token dans l'état
+actuel du projet.
+
+## Collection Postman
+
+Le fichier [`test_api_postman_collection.json`](test_api_postman_collection.json)
+contient les requêtes principales. Importez-le dans Postman puis définissez
+`base_url` à `http://127.0.0.1:8000`.
+
+## Licence
+
+Ce projet est basé sur Laravel et est distribué sous licence MIT.
