@@ -25,6 +25,7 @@ class TaskFactory extends Factory
             'description' => fake()->sentence(10),
             'priority' => $this->faker->randomElement(['low', 'medium', 'high']),
             'status' => $this->faker->randomElement(['todo', 'in_progress', 'done']),
+            'due_date' => now(),
             'created_at' => now(),
             'updated_at' => now(),
         ];
