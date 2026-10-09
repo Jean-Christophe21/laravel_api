@@ -36,7 +36,7 @@ class StoretaskRequest extends FormRequest
     {
         return [
             'priority.required' => "la :attribute est requise",
-            'priority.in' => "la :attribute doit contenir 'todo', 'in_progress', 'done' ",
+            'priority.in' => "la :attribute doit contenir soit 'low', 'medium', 'high'  ",
             'title.max' => 'le champ :attribute est limité à 50 caractères',
             'title.required' => 'le champ :attribute est requis',
             'status.in' => 'le champ :attribute doit appartenir à "todo", "in_progress", "done"',

@@ -7,35 +7,38 @@ use App\Http\Requests\UpdatetaskRequest;
 use App\Interfaces\TaskInterface;
 use App\Models\Task;
 use Illuminate\Http\Request;
+use App\DTO\TaskFilterDTO;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class TaskRepository implements TaskInterface
 {
 
-    public function get(Request $request): array
+    public function getFilterTask(TaskFilterDTO $filters): array|LengthAwarePaginator
     {
-        $per_page = (int)$request->query('per_page', 10);
+        $per_page = (int)$filters->per_page;
 
-        $query = task::query();
-        if($request->filled('status')) {
-            $query->where('status', $request->query('status'));
-        }
-        if($request->filled('priority')) {
-            $query->where('priority', $request->query('priority'));
+        $query = task::query()
+            ->when($filters->status !== null,
+            fn($query) => $query->where('status', $filters->status
+            ))
+            ->when(
+                    $filters->priority !== null,
+                    fn ($query) => $query->where('priority', $filters->priority)
+            )
+            ->when(
+                    $filters->title !== null,
+                    fn ($query) => $query->where('title',  $filters->title)
+            );
+
+        if($filters->page !==null){
+            return $query->paginate($per_page)->items();
         }
 
-        if($request->filled('title')){
-            $query->where('title', $request->query('title'));
-        }
-
-        if($request->filled('page')){
-            return $query->paginate($per_page);
-        }
-
-        return $query->get();
+        return $query->get()->toArray();
     }
 
 
-    public function show($id): Task
+    public function show(int $id): Task
     {
         return task::find($id);
     }

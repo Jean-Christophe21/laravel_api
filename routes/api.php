@@ -15,7 +15,7 @@ Route::prefix('v1')->group(function(){
     Route::get('tasks/{id}', [TaskController::class, 'show']);
 
     Route::post('tasks', [TaskController::class, 'store']);
-    Route::match(['put', 'patch'], 'tasks/{task}', [TaskController::class, 'update']);
-    Route::patch('tasks/{task}/status',[TaskController::class, 'updateStatus']);
-    Route::delete('tasks/{task}', [TaskController::class, 'destroy']);
+    Route::match(['put', 'patch'], 'tasks/{id}', [TaskController::class, 'update']);
+    Route::patch('tasks/{id}/status',[TaskController::class, 'updateStatus']);
+    Route::delete('tasks/{id}', [TaskController::class, 'destroy']);
 });
