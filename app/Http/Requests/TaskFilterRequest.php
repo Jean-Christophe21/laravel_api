@@ -27,6 +27,8 @@ class TaskFilterRequest extends FormRequest
             'title' => ['sometimes', 'nullable', 'string', 'max:255'],
             'page' => ['sometimes', 'integer', 'min:1'],
             'per_page' => ['sometimes', 'integer', 'min:1'],
+            'status' => ['sometimes', 'nullable', Rule::in(['todo', 'in_progress', 'done']), ],
+            'priority' => ['sometimes', 'nullable', Rule::in(['low', 'medium', 'high']), ],
         ];
     }
 }

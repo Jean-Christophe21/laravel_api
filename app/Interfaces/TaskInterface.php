@@ -3,6 +3,7 @@
 namespace App\Interfaces;
 
 use App\DTO\TaskDTO;
+use App\Http\Requests\UpdateStatusRequest;
 use App\Http\Requests\UpdatetaskRequest;
 use App\Models\Task;
 use Illuminate\Http\Request;
@@ -15,9 +16,8 @@ interface TaskInterface
 
     public function show(int $id): Task;
     public function store(TaskDTO $taskDTO): Task;
-    public function update(Task $task, TaskDTO $taskDTO): Task;
-
-    public function updateStatus(Task $task, TaskDTO $taskDTO): Task;
+    public function update(Task $task, UpdatetaskRequest $request): Task;
+    public function updateStatus(Task $task, UpdateStatusRequest $request): Task;
 
     public function destroy(Task $task): void;
 }

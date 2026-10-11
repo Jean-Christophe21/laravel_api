@@ -10,9 +10,8 @@ use App\Interfaces\TaskInterface;
 use App\Models\Task;
 use App\Http\Requests\StoretaskRequest;
 use App\Http\Requests\UpdatetaskRequest;
-use TaskService;
+use App\Services\TaskService;
 use App\Http\Resources\TaskResource;
-use http\Env\Response;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
@@ -51,7 +50,7 @@ class TaskController extends Controller
      */
     public function store(StoretaskRequest $request)
     {
-        $taskDTO = TaskDTO::fromRequest($request->validated());
+        $taskDTO = TaskDTO::fromRequest($request);
 
         $task = $this->taskService->createTask($taskDTO);
 
@@ -66,7 +65,7 @@ class TaskController extends Controller
      */
     public function show(int $id)
     {
-        $task = $this->taskInterface->show($id);
+        $task = $this->taskService->getById($id);
 
         if(!$task){
             return response()->json([
@@ -92,12 +91,7 @@ class TaskController extends Controller
      */
     public function update(UpdatetaskRequest $request,int $id)
     {
-
-        $validated = $request->validated();
-
-        $taskDTO = TaskDTO::fromRequest($request->validated());
-
-        $task = $this->taskService->update($taskDTO, $id);
+        $task = $this->taskService->updateTaskFromTaskDTO($request, $id);
 
         if($task){
             return response()->json([
@@ -113,9 +107,7 @@ class TaskController extends Controller
 
     public function updateStatus(UpdateStatusRequest $request, int $id)
     {
-        $taskDTO = TaskDTO::fromRequest($request->validated());
-
-        $task = $this->taskService->updateTaskStatus($taskDTO, $id);
+        $task = $this->taskService->updateTaskStatus($request, $id);
 
         if($task) {
             return response()->json([

@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\DTO\TaskDTO;
+use App\Http\Requests\UpdateStatusRequest;
 use App\Http\Requests\UpdatetaskRequest;
 use App\Interfaces\TaskInterface;
 use App\Models\Task;
@@ -13,7 +14,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class TaskRepository implements TaskInterface
 {
 
-    public function getFilterTask(TaskFilterDTO $filters): array|LengthAwarePaginator
+    public function getFilterTask(TaskFilterDTO $filters): array
     {
         $per_page = (int)$filters->per_page;
 
@@ -34,7 +35,7 @@ class TaskRepository implements TaskInterface
             return $query->paginate($per_page)->items();
         }
 
-        return $query->get()->toArray();
+        return $query->get()->all();
     }
 
 
@@ -45,19 +46,19 @@ class TaskRepository implements TaskInterface
 
     public function store(TaskDTO $taskDTO): Task
     {
-        $task = task::create($taskDTO);
+        $task = task::create($taskDTO->toArray());
         return  $task;
     }
 
-    public function update(Task $task, TaskDTO $taskDTO): Task
+    public function update(Task $task, UpdatetaskRequest $request): Task
     {
-        $task->update($taskDTO->toArray());
+        $task->update($request->validated());
         return $task->fresh();
     }
 
-    public function updateStatus(Task $task, TaskDTO $taskDTO): Task
+    public function updateStatus(Task $task, UpdateStatusRequest $request): Task
     {
-        $task->update($taskDTO->toArray());
+        $task->update($request->toArray());
         return $task->fresh();
     }
 

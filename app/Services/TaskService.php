@@ -1,5 +1,9 @@
 <?php
 
+namespace App\Services;
+
+use App\Http\Requests\UpdateStatusRequest;
+use App\Http\Requests\UpdatetaskRequest;
 use App\Models\Task;
 use App\Repository\TaskRepository;
 use App\DTO\TaskDTO;
@@ -30,21 +34,21 @@ class TaskService
         return $this->taskInterface->show($id);
     }
 
-    public function updateTaskFromTaskDTO(TaskDTO $taskDTO, int $id)
+    public function updateTaskFromTaskDTO(UpdatetaskRequest $request, int $id)
     {
         $task = $this->taskInterface->show($id);
         if($task){
-            $this->taskInterface->update($task, $taskDTO);
+            $this->taskInterface->update($task, $request);
             return $task->refresh();
         }
         return null;
     }
 
-    public function updateTaskStatus(TaskDTO $taskDTO, int $id)
+    public function updateTaskStatus(UpdateStatusRequest $request, int $id)
     {
         $task = $this->taskInterface->show($id);
         if($task){
-            $this->taskInterface->updateStatus($task, $taskDTO);
+            $this->taskInterface->updateStatus($task, $request);
             return $task->refresh();
         }
         return null;
