@@ -4,15 +4,13 @@ namespace App\Http\Controllers;
 
 use App\DTO\TaskDTO;
 use App\DTO\TaskFilterDTO;
+use App\DTO\TaskStatusDTO;
 use App\Http\Requests\TaskFilterRequest;
 use App\Http\Requests\UpdateStatusRequest;
-use App\Interfaces\TaskInterface;
-use App\Models\Task;
+use App\Services\TaskServiceInterface;
 use App\Http\Requests\StoretaskRequest;
 use App\Http\Requests\UpdatetaskRequest;
-use App\Services\TaskService;
 use App\Http\Resources\TaskResource;
-use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
@@ -21,7 +19,7 @@ class TaskController extends Controller
      */
     public function __construct(
 //        private readonly TaskInterface $taskInterface,
-        private readonly TaskService $taskService
+        private readonly TaskServiceInterface $taskService
     )
     {
 
@@ -37,13 +35,6 @@ class TaskController extends Controller
                 ],200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-//    public function create()
-//    {
-//        //request()->request
-//    }
 
     /**
      * Store a newly created resource in storage.
@@ -69,7 +60,7 @@ class TaskController extends Controller
 
         if(!$task){
             return response()->json([
-                'message'=> 'Object not found'
+                'message'=> 'Task not found'
             ], 404);
         }
         return response()->json([
@@ -79,19 +70,12 @@ class TaskController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-//    public function edit(task $task)
-//    {
-//        //
-//    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(UpdatetaskRequest $request,int $id)
     {
-        $task = $this->taskService->updateTaskFromTaskDTO($request, $id);
+        $updatetaskRequest = TaskDTO::fromRequest($request);
+        $task = $this->taskService->updateTaskFromTaskDTO($updatetaskRequest, $id);
 
         if($task){
             return response()->json([
@@ -107,7 +91,8 @@ class TaskController extends Controller
 
     public function updateStatus(UpdateStatusRequest $request, int $id)
     {
-        $task = $this->taskService->updateTaskStatus($request, $id);
+        $updatetaskStatusDTO = TaskStatusDTO::fromRequest($request);
+        $task = $this->taskService->updateTaskStatus($updatetaskStatusDTO, $id);
 
         if($task) {
             return response()->json([

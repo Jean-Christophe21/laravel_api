@@ -3,15 +3,11 @@
 namespace App\Repository;
 
 use App\DTO\TaskDTO;
-use App\Http\Requests\UpdateStatusRequest;
-use App\Http\Requests\UpdatetaskRequest;
-use App\Interfaces\TaskInterface;
+use App\DTO\TaskStatusDTO;
 use App\Models\Task;
-use Illuminate\Http\Request;
 use App\DTO\TaskFilterDTO;
-use Illuminate\Pagination\LengthAwarePaginator;
 
-class TaskRepository implements TaskInterface
+class TaskRepository implements TaskRepositoryInterface
 {
 
     public function getFilterTask(TaskFilterDTO $filters): array
@@ -39,31 +35,36 @@ class TaskRepository implements TaskInterface
     }
 
 
-    public function show(int $id): Task
+    public function show(int $id): ?Task
     {
         return task::find($id);
+
     }
 
     public function store(TaskDTO $taskDTO): Task
     {
-        $task = task::create($taskDTO->toArray());
-        return  $task;
+        return task::create($taskDTO->toArray());
     }
 
-    public function update(Task $task, UpdatetaskRequest $request): Task
+    public function update(int $id, TaskDTO $updateTaskDTO): ?Task
     {
-        $task->update($request->validated());
+        $task = task::find($id);
+        if($task){
+            $task->update($updateTaskDTO->toArray());
+            return $task->fresh();
+        }
+        return null;
+    }
+
+    public function updateStatus(Task $task, TaskStatusDTO $updateTaskStatusDTO): Task
+    {
+        $task->update($updateTaskStatusDTO->toArray());
         return $task->fresh();
     }
 
-    public function updateStatus(Task $task, UpdateStatusRequest $request): Task
+    public function destroy(int $id): void
     {
-        $task->update($request->toArray());
-        return $task->fresh();
-    }
-
-    public function destroy(Task $task): void
-    {
+        $task = $this->show($id);
         $task->delete();
     }
 }

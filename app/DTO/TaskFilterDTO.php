@@ -3,13 +3,13 @@
 namespace App\DTO;
 
 use App\Http\Requests\StoretaskRequest;
+use App\Http\Requests\TaskFilterRequest;
 use Illuminate\Http\Request;
 use Spatie\LaravelData\Data;
 
 class TaskFilterDTO
 {
     public function __construct (
-        public ?int $id = null,
         public ?string $status = null,
         public ?string $priority = null,
         public ?string $title = null,
@@ -17,7 +17,7 @@ class TaskFilterDTO
         public ?int $per_page = 10,
     ) { }
 
-    public static function fromRequest(StoretaskRequest $request)
+    public static function fromRequest(TaskFilterRequest $request)
     {
         return new self(
             status: $request->validated('status'),

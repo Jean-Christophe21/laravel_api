@@ -6,13 +6,13 @@ use App\Http\Requests\StoretaskRequest;
 use App\Http\Requests\UpdateStatusRequest;
 use App\Http\Requests\UpdatetaskRequest;
 use App\Models\Task;
+use Carbon\Carbon;
 use Spatie\LaravelData\Data;
 use DateTime;
 
 class TaskDTO
 {
     public function __construct(
-        public ?int $id,
         public string $title,
         public ?string $description = "",
         public string $priority,
@@ -23,7 +23,6 @@ class TaskDTO
     public function toArray(): array
     {
         return [
-            'id' => $this->id,
             'title'=> $this->title,
             'description' => $this->description,
             'priority' => $this->priority,
@@ -35,12 +34,11 @@ class TaskDTO
     public static function fromRequest(StoretaskRequest|UpdatetaskRequest|UpdateStatusRequest $request)
     {
         return new self(
-            id: null,
             title: $request->validated('title'),
             description: $request->validated('description'),
             priority: $request->validated('priority'),
             status: $request->validated('status'),
-            due_date: $request->validated('due_date'),
+            due_date: Carbon::parse($request->validated('due_date')),
         );
     }
 }
